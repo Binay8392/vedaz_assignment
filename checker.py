@@ -32,7 +32,6 @@ from utils import (
     write_jsonl,
 )
 
-
 LOGGER = logging.getLogger(__name__)
 
 SafetyStatus = Literal["Safe", "Warning", "Unsafe"]
@@ -126,7 +125,9 @@ class SafetyDetector:
         assessment = self.assess_text(assistant, context_text=dialogue)
         return assessment
 
-    def assess_text(self, text: str, context_text: str | None = None) -> SafetyAssessment:
+    def assess_text(
+        self, text: str, context_text: str | None = None
+    ) -> SafetyAssessment:
         """Assess assistant text with regex rules and optional LLM review."""
         reasons: list[str] = []
         categories: list[str] = []
@@ -162,9 +163,24 @@ class SafetyDetector:
     def _rule_matches(rule: SafetyRule, normalized_text: str) -> bool:
         """Return True when a rule matches outside nearby refusal language."""
         for match in re.finditer(rule.pattern, normalized_text, flags=re.IGNORECASE):
-            before = normalized_text[max(0, match.start() - 30) : match.start()]
+            before = normalized_text[max(0, match.start() - 60) : match.start()]
+            matched_and_after = normalized_text[
+                match.start() : min(len(normalized_text), match.end() + 40)
+            ]
             if re.search(
-                r"\b(no|not|never|cannot|can't|cant|do not|don't|without|avoid)\b.{0,25}$",
+                r"\b(no|not|never|cannot|can't|cant|do not|don't|"
+                r"without|avoid|nahi)\b.{0,35}$",
+                before,
+            ):
+                continue
+            if re.search(
+                r"\b(no|not|never|cannot|can't|cant|nahi)\b",
+                matched_and_after,
+            ):
+                continue
+            if re.search(
+                r"\b(absolute claims? like|claim(?:s|ing)?|"
+                r"anyone who|if (?:someone|anyone)|agar koi)\b.{0,55}$",
                 before,
             ):
                 continue
@@ -223,6 +239,15 @@ class SafetyDetector:
     def _build_unsafe_rules() -> list[SafetyRule]:
         """Unsafe content rules."""
         return [
+            SafetyRule(
+                "self_harm_encouragement",
+                "Unsafe",
+                (
+                    r"\b(kill yourself|go ahead and die|you should die|"
+                    r"end your life|suicide is the answer)\b"
+                ),
+                "Encourages or endorses self-harm.",
+            ),
             SafetyRule(
                 "death_prediction",
                 "Unsafe",
@@ -312,6 +337,16 @@ class SafetyDetector:
     def _build_warning_rules() -> list[SafetyRule]:
         """Sensitive-topic warning rules that are not automatically unsafe."""
         return [
+            SafetyRule(
+                "self_harm_topic",
+                "Warning",
+                (
+                    r"\b(suicid\w*|self[- ]harm|kill myself|end my life|"
+                    r"do not want to live)\b|"
+                    r"(जीने का मन नहीं|खुद को नुकसान|आत्महत्या)"
+                ),
+                "Possible self-harm crisis; emergency-first support is required.",
+            ),
             SafetyRule(
                 "medical_topic",
                 "Warning",
@@ -472,12 +507,12 @@ def split_train_test(
     train_path: Path,
     test_path: Path,
     seed: int = 42,
-    test_ratio: float = 0.10,
+    test_ratio: float = 0.20,
 ) -> tuple[int, int, list[dict[str, Any]]]:
-    """Create a deterministic 90/10 split from valid, non-unsafe, non-duplicate records."""
+    """Create a deterministic train/validation split from eligible records."""
     seen_hashes: set[str] = set()
     eligible: list[dict[str, Any]] = []
-    for record, check in zip(records, checks):
+    for record, check in zip(records, checks, strict=True):
         if not check.is_valid or check.safety.status == "Unsafe":
             continue
         if check.content_hash in seen_hashes:
@@ -576,7 +611,7 @@ def write_checker_report(result: DatasetCheckResult, path: Path) -> None:
         f"- Exact duplicate groups: {len(result.exact_duplicates)}",
         f"- Near-duplicate pairs: {len(result.near_duplicates)}",
         f"- Train split: {result.train_count}",
-        f"- Test split: {result.test_count}",
+        f"- Validation split: {result.test_count}",
         "",
         "## Dataset Statistics",
         "",
@@ -666,10 +701,11 @@ def parse_args() -> argparse.Namespace:
         help="Train JSONL output path.",
     )
     parser.add_argument(
-        "--test",
+        "--validation",
+        dest="test",
         type=Path,
-        default=DATA_DIR / "test.jsonl",
-        help="Test JSONL output path.",
+        default=DATA_DIR / "validation.jsonl",
+        help="Validation JSONL output path.",
     )
     parser.add_argument(
         "--near-threshold",
@@ -700,7 +736,7 @@ def main() -> None:
         seed=args.seed,
     )
     LOGGER.info(
-        "Checked %s conversations. Train=%s Test=%s Report=%s",
+        "Checked %s conversations. Train=%s Validation=%s Report=%s",
         len(result.checks),
         result.train_count,
         result.test_count,

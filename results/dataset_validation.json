@@ -1,0 +1,212 @@
+{
+  "passed": true,
+  "files": [
+    "data/train.jsonl",
+    "data/validation.jsonl"
+  ],
+  "total_records": 58,
+  "valid_records": 58,
+  "safety_counts": {
+    "Safe": 31,
+    "Warning": 27,
+    "Unsafe": 0
+  },
+  "token_statistics": {
+    "minimum": 101,
+    "maximum": 737,
+    "average": 308.52
+  },
+  "error_count": 0,
+  "warning_count": 27,
+  "issues": [
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 1,
+      "message": "High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 2,
+      "message": "High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 4,
+      "message": "High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 6,
+      "message": "High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 7,
+      "message": "High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 8,
+      "message": "High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 16,
+      "message": "High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 19,
+      "message": "High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 20,
+      "message": "High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 23,
+      "message": "Sensitive medical or mental-health topic; professional care may be needed."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 24,
+      "message": "High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 25,
+      "message": "Sensitive financial topic; qualified financial advice may be needed."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 26,
+      "message": "High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 28,
+      "message": "High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 32,
+      "message": "Sensitive legal topic; qualified legal advice may be needed.; Sensitive financial topic; qualified financial advice may be needed."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 33,
+      "message": "High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 40,
+      "message": "High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 41,
+      "message": "Sensitive financial topic; qualified financial advice may be needed."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 42,
+      "message": "Sensitive medical or mental-health topic; professional care may be needed.; High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/train.jsonl",
+      "record": 46,
+      "message": "Sensitive medical or mental-health topic; professional care may be needed."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/validation.jsonl",
+      "record": 1,
+      "message": "Sensitive medical or mental-health topic; professional care may be needed."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/validation.jsonl",
+      "record": 4,
+      "message": "Sensitive medical or mental-health topic; professional care may be needed.; High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/validation.jsonl",
+      "record": 5,
+      "message": "Sensitive medical or mental-health topic; professional care may be needed."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/validation.jsonl",
+      "record": 6,
+      "message": "Sensitive medical or mental-health topic; professional care may be needed.; High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/validation.jsonl",
+      "record": 8,
+      "message": "High-stakes life outcome; avoid guarantees and keep guidance limited."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/validation.jsonl",
+      "record": 10,
+      "message": "Sensitive legal topic; qualified legal advice may be needed."
+    },
+    {
+      "severity": "warning",
+      "code": "sensitive_topic",
+      "source": "data/validation.jsonl",
+      "record": 12,
+      "message": "Sensitive medical or mental-health topic; professional care may be needed.; High-stakes life outcome; avoid guarantees and keep guidance limited."
+    }
+  ]
+}

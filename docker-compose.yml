@@ -1,0 +1,37 @@
+services:
+  vedaz-api:
+    build:
+      context: .
+      args:
+        VLLM_VERSION: v0.10.2
+    image: vedaz-vllm:0.1.0
+    restart: unless-stopped
+    ipc: host
+    shm_size: "8gb"
+    gpus: all
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      VLLM_API_KEY: ${VLLM_API_KEY}
+      VLLM_BASE_MODEL: ${VLLM_BASE_MODEL:-Qwen/Qwen2.5-3B-Instruct}
+      VLLM_ADAPTER_NAME: ${VLLM_ADAPTER_NAME:-vedaz}
+      VLLM_ADAPTER_PATH: /models/adapter
+      VLLM_GPU_MEMORY_UTILIZATION: ${VLLM_GPU_MEMORY_UTILIZATION:-0.90}
+      VLLM_MAX_MODEL_LEN: ${VLLM_MAX_MODEL_LEN:-4096}
+      HF_TOKEN: ${HF_TOKEN:-}
+    volumes:
+      - ${ADAPTER_PATH:-./artifacts/qwen2.5-3b-vedaz-lora/adapter}:/models/adapter:ro
+      - huggingface-cache:/root/.cache/huggingface
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 180s
+
+volumes:
+  huggingface-cache:

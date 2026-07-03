@@ -1,0 +1,4 @@
+-r requirements.txt
+
+# Unsloth supports the Linux/WSL CUDA training path.
+unsloth>=2025.5.9,<2027; platform_system == "Linux"

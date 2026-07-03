@@ -9,12 +9,13 @@ import os
 import re
 import urllib.error
 import urllib.request
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, ValidationError, validator
-
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DATA_DIR = PROJECT_ROOT / "data"
@@ -26,10 +27,13 @@ Role = Literal["system", "user", "assistant"]
 class ChatMessage(BaseModel):
     """One OpenAI-style chat fine-tuning message."""
 
+    model_config = ConfigDict(extra="forbid")
+
     role: Role
     content: str
 
-    @validator("content")
+    @field_validator("content")
+    @classmethod
     def content_must_not_be_empty(cls, value: str) -> str:
         """Reject empty message content."""
         if not isinstance(value, str) or not value.strip():
@@ -40,11 +44,17 @@ class ChatMessage(BaseModel):
 class Conversation(BaseModel):
     """Fine-tuning conversation record."""
 
+    model_config = ConfigDict(extra="forbid")
+
     messages: list[ChatMessage]
     metadata: dict[str, Any] = Field(default_factory=dict)
 
-    @validator("messages")
-    def messages_must_not_be_empty(cls, value: list[ChatMessage]) -> list[ChatMessage]:
+    @field_validator("messages")
+    @classmethod
+    def messages_must_not_be_empty(
+        cls,
+        value: list[ChatMessage],
+    ) -> list[ChatMessage]:
         """Require at least a system, user, and assistant message."""
         if len(value) < 3:
             raise ValueError("conversation must contain at least 3 messages")
@@ -135,12 +145,52 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
     return records
 
 
-def write_jsonl(records: list[dict[str, Any]], path: Path) -> None:
-    """Write dictionaries as UTF-8 JSONL."""
+def write_jsonl(records: Iterable[dict[str, Any]], path: Path) -> None:
+    """Atomically write dictionaries as UTF-8 JSONL."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as file:
-        for record in records:
-            file.write(json.dumps(record, ensure_ascii=False) + "\n")
+    temporary_path: Path | None = None
+    try:
+        with NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            newline="\n",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as file:
+            temporary_path = Path(file.name)
+            for record in records:
+                file.write(json.dumps(record, ensure_ascii=False) + "\n")
+        temporary_path.replace(path)
+    except Exception:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+        raise
+
+
+def write_json(payload: Any, path: Path) -> None:
+    """Atomically write a JSON document."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path: Path | None = None
+    try:
+        with NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            newline="\n",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as file:
+            temporary_path = Path(file.name)
+            json.dump(payload, file, ensure_ascii=False, indent=2)
+            file.write("\n")
+        temporary_path.replace(path)
+    except Exception:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+        raise
 
 
 def read_json_dataset(path: Path) -> list[dict[str, Any]]:
@@ -170,12 +220,20 @@ def read_dataset(path: Path) -> list[dict[str, Any]]:
 
 def normalize_record(raw: dict[str, Any]) -> dict[str, Any]:
     """Normalize common dataset variants into a messages-based record."""
+    metadata = (
+        dict(raw.get("metadata", {})) if isinstance(raw.get("metadata"), dict) else {}
+    )
+    if isinstance(raw.get("id"), str):
+        metadata.setdefault("id", raw["id"])
+    if isinstance(raw.get("tags"), list):
+        metadata.setdefault("tags", raw["tags"])
+
     if "messages" in raw:
-        return raw
+        return {"messages": raw["messages"], "metadata": metadata}
     if "conversation" in raw and isinstance(raw["conversation"], list):
-        return {"messages": raw["conversation"], "metadata": raw.get("metadata", {})}
+        return {"messages": raw["conversation"], "metadata": metadata}
     if "chat" in raw and isinstance(raw["chat"], list):
-        return {"messages": raw["chat"], "metadata": raw.get("metadata", {})}
+        return {"messages": raw["chat"], "metadata": metadata}
     return raw
 
 
@@ -194,18 +252,13 @@ def validate_conversation_schema(raw: dict[str, Any]) -> SchemaValidationResult:
     if roles[0] != "system":
         errors.append("first message must have role 'system'")
 
-    expected = "user"
     for index, role in enumerate(roles[1:], start=1):
+        expected = "user" if index % 2 == 1 else "assistant"
         if role != expected:
-            errors.append(
-                f"message {index} has role '{role}', expected '{expected}'"
-            )
-            expected = "assistant" if expected == "user" else "user"
-            continue
-        expected = "assistant" if expected == "user" else "user"
+            errors.append(f"message {index} has role '{role}', expected '{expected}'")
 
     if roles[-1] != "assistant":
-        errors.append("conversation should end with an assistant message")
+        errors.append("conversation must end with an assistant message")
 
     return SchemaValidationResult(not errors, errors, conversation)
 

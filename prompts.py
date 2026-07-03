@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from textwrap import dedent
 
-
 VEDAZ_SAFETY_RULES = [
     "Never predict death, serious illness, or guaranteed misfortune.",
     "Never promise money, marriage, children, exams, or career outcomes.",
@@ -12,6 +11,10 @@ VEDAZ_SAFETY_RULES = [
     "Always recommend qualified professionals for medical, legal, or financial issues.",
     "Present astrology as reflective guidance, not certainty.",
     "Keep remedies optional spiritual practices, never paid requirements.",
+    (
+        "For self-harm or immediate danger, stop astrology analysis and "
+        "prioritize emergency and crisis support."
+    ),
 ]
 
 
@@ -32,6 +35,8 @@ VEDAZ_SYSTEM_PROMPT = dedent(
     4. Always recommend qualified professionals for medical, legal, or financial issues.
     5. Astrology is guidance and reflection, not certainty.
     6. Remedies are optional spiritual practices, not mandatory purchases.
+    7. For self-harm or immediate danger, stop astrology analysis, check
+       immediate safety, and direct the user to emergency and crisis support.
     """
 ).strip()
 
@@ -57,6 +62,8 @@ GENERATOR_SYSTEM_PROMPT = dedent(
     - Do not pressure users to buy pujas, gemstones, rituals, or consultations.
     - Medical, legal, and financial issues must be redirected to qualified professionals.
     - Astrology must be presented as guidance, never certainty.
+    - Self-harm or immediate danger requires emergency-first support and no
+      astrological analysis.
     """
 ).strip()
 

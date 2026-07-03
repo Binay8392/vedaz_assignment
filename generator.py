@@ -10,7 +10,11 @@ from pathlib import Path
 from typing import Any
 
 from checker import SafetyDetector
-from prompts import GENERATOR_SYSTEM_PROMPT, VEDAZ_SYSTEM_PROMPT, build_generation_prompt
+from prompts import (
+    GENERATOR_SYSTEM_PROMPT,
+    VEDAZ_SYSTEM_PROMPT,
+    build_generation_prompt,
+)
 from utils import (
     DATA_DIR,
     LLMClient,
@@ -20,7 +24,6 @@ from utils import (
     validate_conversation_schema,
     write_jsonl,
 )
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -138,7 +141,9 @@ def make_record(
     turns: list[tuple[str, str]],
 ) -> dict[str, Any]:
     """Build a messages record from user/assistant turns."""
-    messages: list[dict[str, str]] = [{"role": "system", "content": VEDAZ_SYSTEM_PROMPT}]
+    messages: list[dict[str, str]] = [
+        {"role": "system", "content": VEDAZ_SYSTEM_PROMPT}
+    ]
     for user, assistant in turns:
         messages.append({"role": "user", "content": user})
         messages.append({"role": "assistant", "content": assistant})
